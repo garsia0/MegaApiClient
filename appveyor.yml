@@ -1,8 +1,5 @@
-version: 1.7.1.{build}
+version: x.x.x.{build}
 image: Visual Studio 2017
-
-pull_requests:
-  do_not_increment_build_number: true
 
 nuget:
   disable_publish_on_pr: true
@@ -15,7 +12,7 @@ environment:
   github_email: gregoire@pailler.fr
   github_username: Gregoire Pailler (auto push)
   github_auth_token:
-    secure: +346hyzBwuhGGVJJTgtAdGfoQ3ck26Q9zFx8mNSsWYkx8og19sJXjAlOYj8EnZv1
+    secure: OELWxLBLVw9arTKB4IIBhY+xRdeSZK26a4gUqhHR631GqPSd0IPKaxYVvhuAfeaa
 
 install:
   - choco install docfx -y
@@ -43,7 +40,7 @@ deploy:
       appveyor_repo_tag: false
   - provider: NuGet
     api_key:
-      secure: ACe+DVfSBEi1DDsnpA8lARG67ORpXw+Pfkyxcln1ZVRUDZNbcZdxgUX/iiI/cidq
+      secure: nDWd+s2MpubQOyg2w6KoIIwZ3CU9ZqKGAei86vpPlti02PEHZtS4svapv255nCcY
     skip_symbols: true
     on:
       branch: master
@@ -52,7 +49,7 @@ deploy:
     release: v$(appveyor_build_version)
     description: 'Description'
     auth_token:
-      secure: +346hyzBwuhGGVJJTgtAdGfoQ3ck26Q9zFx8mNSsWYkx8og19sJXjAlOYj8EnZv1
+      secure: OELWxLBLVw9arTKB4IIBhY+xRdeSZK26a4gUqhHR631GqPSd0IPKaxYVvhuAfeaa
     draft: true
     on:
       branch: master

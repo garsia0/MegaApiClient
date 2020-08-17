@@ -209,10 +209,12 @@ namespace CG.Web.MegaApiClient.Tests
       Assert.Throws<ArgumentNullException>(expectedMessage, () => this.context.Client.GenerateAuthInfos(email, password));
     }
 
-    [Theory, InlineData("username@example.com", "password", "{'Email':'username@example.com','Hash':'ObELy57HULI','PasswordAesKey':'ZAM5cl5uvROiXwBSEp98sQ=='}")]
-    public void GenerateAuthInfos_ValidCredentials_Succeeds(string email, string password, string expectedResult)
+    [Theory]
+    [InlineData("username@example.com", "password", null, "{'Email':'username@example.com','Hash':'ObELy57HULI','PasswordAesKey':'ZAM5cl5uvROiXwBSEp98sQ==','MFAKey':null}")]
+    [InlineData("username@example.com", "password", "mfa", "{'Email':'username@example.com','Hash':'ObELy57HULI','PasswordAesKey':'ZAM5cl5uvROiXwBSEp98sQ==','MFAKey':'mfa'}")]
+    public void GenerateAuthInfos_ValidCredentials_Succeeds(string email, string password, string mfa, string expectedResult)
     {
-      var authInfos = this.context.Client.GenerateAuthInfos(email, password);
+      var authInfos = this.context.Client.GenerateAuthInfos(email, password, mfa);
       var result = JsonConvert.SerializeObject(authInfos, Formatting.None).Replace('\"', '\'');
 
       Assert.Equal(expectedResult, result);
@@ -270,7 +272,7 @@ namespace CG.Web.MegaApiClient.Tests
 
       Assert.NotNull(accountInformation);
       Assert.Equal(53687091200, accountInformation.TotalQuota);
-      Assert.Equal(1046530 + AuthenticatedTestContext.FileSize + AuthenticatedTestContext.SubFolderFileSize, accountInformation.UsedQuota); // 1046530 is from incoming shares
+      Assert.Equal(AuthenticatedTestContext.FileSize + AuthenticatedTestContext.SubFolderFileSize, accountInformation.UsedQuota);
     }
 
     [Theory, MemberData(nameof(GetCredentialsV2), false)]

@@ -3,6 +3,7 @@ namespace CG.Web.MegaApiClient
 {
   using System;
   using System.IO;
+  using System.Net;
   using System.Reflection;
   using System.Text;
   using System.Threading;
@@ -10,12 +11,10 @@ namespace CG.Web.MegaApiClient
   using System.Net.Http;
   using System.Net.Http.Headers;
 
-
-  
   public class WebClient : IWebClient
   {
     private const int DefaultResponseTimeout = Timeout.Infinite;
-    public event EventHandler<UploadProgress> OnUploadProgress;
+
     private readonly HttpClient httpClient;
 
     public WebClient(int responseTimeout = DefaultResponseTimeout, ProductInfoHeaderValue userAgent = null)
@@ -54,19 +53,29 @@ namespace CG.Web.MegaApiClient
 
     private string PostRequest(Uri url, Stream dataStream, string contentType)
     {
-      using (ProgressionStreamBasic PS = new ProgressionStreamBasic(dataStream,  x => OnUploadProgress(this, new UploadProgress((long)(((double)x / (double)dataStream.Length) * 100), x, dataStream.Length))))
+      using (StreamContent content = new StreamContent(dataStream, this.BufferSize))
       {
-        using (StreamContent content = new StreamContent(PS, this.BufferSize))
+        content.Headers.ContentType = new MediaTypeHeaderValue(contentType);
+      
+        var requestMessage = new HttpRequestMessage(HttpMethod.Post, url);
+        requestMessage.Content = content;
+        
+        using (HttpResponseMessage response = this.httpClient.SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead).Result)
         {
-          content.Headers.ContentType = new MediaTypeHeaderValue(contentType);
-          using (HttpResponseMessage response = this.httpClient.PostAsync(url, content).Result)
+          if (!response.IsSuccessStatusCode
+              && response.StatusCode == HttpStatusCode.InternalServerError
+              && response.ReasonPhrase == "Server Too Busy")
           {
-            using (Stream stream = response.Content.ReadAsStreamAsync().Result)
+            return ((long)ApiResultCode.RequestFailedRetry).ToString();
+          }
+          
+          response.EnsureSuccessStatusCode();
+          
+          using (Stream stream = response.Content.ReadAsStreamAsync().Result)
+          {
+            using (StreamReader streamReader = new StreamReader(stream, Encoding.UTF8))
             {
-              using (StreamReader streamReader = new StreamReader(stream, Encoding.UTF8))
-              {
-                return streamReader.ReadToEnd();
-              }
+              return streamReader.ReadToEnd();
             }
           }
         }

@@ -66,7 +66,7 @@ namespace CG.Web.MegaApiClient.Tests.Context
     protected virtual IMegaApiClient CreateClient()
     {
       this.Options = new Options(applicationKey: "ewZQFBBC");
-      this.WebClient = new TestWebClient(new WebClient(this.WebTimeout, null, new TestMessageHandler(this.logMessageAction), true), MaxRetry, this.logMessageAction);
+      this.WebClient = new TestWebClient(new WebClient(this.WebTimeout, null, new TestMessageHandler(this.logMessageAction), false), MaxRetry, this.logMessageAction);
 
       return new MegaApiClient(this.Options, this.WebClient);
     }
@@ -90,7 +90,7 @@ namespace CG.Web.MegaApiClient.Tests.Context
 
     private void OnApiRequestFailed(object sender, ApiRequestFailedEventArgs e)
     {
-      this.logMessageAction($"ApiRequestFailed: {e.ApiResult}, {e.ApiUrl}, {e.AttemptNum}, {e.DelayMilliseconds}ms, {e.ResponseJson}, {e.Exception} {e.Exception?.Message}");
+      this.logMessageAction($"ApiRequestFailed: {e.ApiResult}, {e.ApiUrl}, {e.AttemptNum}, {e.RetryDelay}, {e.ResponseJson}, {e.Exception} {e.Exception?.Message}");
     }
 
     private class TestMessageHandler : HttpClientHandler
