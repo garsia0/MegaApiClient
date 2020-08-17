@@ -32,6 +32,9 @@
     private byte[] masterKey;
     private uint sequenceIndex = (uint)(uint.MaxValue * new Random().NextDouble());
     private bool authenticatedLogin;
+    public event EventHandler<UploadProgress> OnUploadProgress;
+    public long TotalChunkLeng = 0;
+    private long CurrentUpload = 0;
 
     #region Constructors
 
@@ -41,6 +44,7 @@
     public MegaApiClient()
         : this(new Options(), new WebClient())
     {
+      this.webClient.OnUploadProgress += WebClient_OnUploadProgress;
     }
 
     /// <summary>
@@ -77,6 +81,14 @@
       this.options = options;
       this.webClient = webClient;
       this.webClient.BufferSize = options.BufferSize;
+    }
+
+    private void WebClient_OnUploadProgress(object sender, UploadProgress e)
+    {
+      if (OnUploadProgress != null)
+      {
+        OnUploadProgress(this, new UploadProgress(e.Progress, CurrentUpload + e.Uploaded, TotalChunkLeng));
+      }
     }
 
     #endregion
