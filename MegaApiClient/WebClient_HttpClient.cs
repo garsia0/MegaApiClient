@@ -14,7 +14,7 @@ namespace CG.Web.MegaApiClient
   public class WebClient : IWebClient
   {
     private const int DefaultResponseTimeout = Timeout.Infinite;
-
+    public event EventHandler<UploadProgress> OnUploadProgress;
     private readonly HttpClient httpClient;
 
     public WebClient(int responseTimeout = DefaultResponseTimeout, ProductInfoHeaderValue userAgent = null)
